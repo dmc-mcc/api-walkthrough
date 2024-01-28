@@ -35,6 +35,7 @@ const API_URL = "https://ci-jshint.herokuapp.com/api";
 const resultModal = new bootstrap.Modal(document.getElementById("resultsModal"));
 
 document.getElementById("status").addEventListener("click", e => getStatus(e));
+document.getElementById("submit").addEventListener("click", e => postForm(e));
 
 /*
 1. make a GET request to the api url with the api api key
@@ -49,11 +50,10 @@ async function getStatus(e) {
     // console.log(queryString);
 
     if (response.ok) {
-//        console.log(data);
-  //      console.log(data.expiry);
+        //        console.log(data);
+        //      console.log(data.expiry);
         displayStatus(data);
-    }
-    else {
+    } else {
         throw new Error(data.error);
     }
 }
@@ -68,11 +68,80 @@ function displayStatus(data) {
 
 }
 
-/*
-const response = fetch("https://ci-jshint.herokuapp.com/api", {
-                        method: "POST",
-                        headers: {
-                                    "Authorization": API_KEY,
-                                 }
-                        })
+async function postForm(e) {
+
+    const form = new FormData(document.getElementById("checksform"));
+ //   const form = new FormData(document.getElementById("checksform"));
+
+  /*  
+    for ( let y of form.entries()){
+        console.log(y);
+    }
 */
+    const queryString = `${API_URL}?api_key=${API_KEY}`;
+    
+    //const response = await fetch(queryString,
+    const response = await fetch("https://ci-jshint.herokuapp.com/api", 
+        { method: "POST",
+        headers: {
+            "Authorization": API_KEY,
+        },
+        body: form
+    });
+
+/*
+
+const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+        "Authorization": API_KEY,
+    },
+    body: form,
+});
+*/
+    const data = await response.json();
+    if (response.ok) {
+        displayErrors(data);
+    }
+    else {
+        throw new Error(data.error);
+    }
+
+    
+}
+
+
+function displayErrors(data) {
+
+    let results = "";
+
+    let heading = `JSHint Results for ${data.file}`;
+    if (data.total_errors === 0) {
+        results = `<div class="no_errors">No errors reported!</div>`;
+    } else {
+        results = `<div>Total Errors: <span class="error_count">${data.total_errors}</span></div>`;
+        for (let error of data.error_list) {
+            results += `<div>At line <span class="line">${error.line}</span>, `;
+            results += `column <span class="column">${error.col}:</span></div>`;
+            results += `<div class="error">${error.error}</div>`;
+        }
+    }
+
+    document.getElementById("resultsModalTitle").innerText = heading;
+    document.getElementById("results-content").innerHTML = results;
+    resultsModal.show();
+}
+
+
+function displayStatus(data) {
+
+    let heading = "API Key Status";
+    let results = `<div>Your key is valid until</div>`;
+    results += `<div class="key-status">${data.expiry}</div>`;
+
+    document.getElementById("resultsModalTitle").innerText = heading;
+    document.getElementById("results-content").innerHTML = results;
+    resultsModal.show();
+
+}
+
