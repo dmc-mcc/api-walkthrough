@@ -26,6 +26,8 @@ async function getStatus(e) {
 https://ci-jshint.herokuapp.com/api?api_key=fVnFlkPl2O7QEU5uHvbOPg8n5l4
 https://getbootstrap.com/docs/5.0/components/modal/#via-javascript
 
+https://developer.mozilla.org/en-US/docs/Web/API/FormData
+
 */
 
 const API_KEY = "fVnFlkPl2O7QEU5uHvbOPg8n5l4";
@@ -47,9 +49,23 @@ async function getStatus(e) {
     // console.log(queryString);
 
     if (response.ok) {
-        console.log(data);
-        console.log(data.expiry);
+//        console.log(data);
+  //      console.log(data.expiry);
+        displayStatus(data);
     }
+    else {
+        throw new Error(data.error);
+    }
+}
+
+function displayStatus(data) {
+    let heading = "API Key Status";
+    let results = `<div>Key valid through to: </div>`
+    results += `<div class="key-status">${data.expiry}</div>`;
+    document.getElementById("resultsModalTitle").innerText = heading;
+    document.getElementById("results-content").innerHTML = results;
+    resultModal.show();
+
 }
 
 /*
